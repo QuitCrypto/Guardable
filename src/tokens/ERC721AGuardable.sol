@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
+import "ERC721A/ERC721A.sol";
 import "../Guardable.sol";
 
 /**
  * @dev Contract module which provides added security functionality, where
  * where an account can assign a guardian to protect their NFTs. While a guardian
- * is assigned, setApprovalForAll is locked. New approvals cannot be set. There can
+ * is assigned, setApprovalForAll and approve are both locked. New approvals cannot be set. There can
  * only ever be one guardian per account, and setting a new guardian will overwrite
  * any existing one.
  *
@@ -22,17 +22,22 @@ import "../Guardable.sol";
  * It is not recommended to use _lockToSelf, as removing this lock would be easily added to
  * a malicious workflow, whereas removing a traditional lock from a guardian account would
  * be sufficiently prohibitive.
- *
- * This is less effective at guarding than ERC721Guardable because of the existence of
- * safeBatchTransferFrom, so it is important to remain careful.
  */
 
-contract ERC1155Guardable is Guardable, ERC1155Supply {
+contract ERC721AGuardable is ERC721A, Guardable {
 
-  constructor(string memory _uri) ERC1155(_uri) {}
-  
-  function supportsInterface(bytes4 interfaceId) public view virtual override(Guardable, ERC1155) returns (bool) {
-    return Guardable.supportsInterface(interfaceId) || ERC1155.supportsInterface(interfaceId);
+  constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
+
+  function supportsInterface(bytes4 interfaceId) public view virtual override(Guardable, ERC721A) returns (bool) {
+    return Guardable.supportsInterface(interfaceId) || ERC721A.supportsInterface(interfaceId);
+  }
+
+  function approve(address to, uint256 tokenId) public payable override {
+    if (locks[msg.sender] != address(0)) {
+      revert TokenIsLocked();
+    }
+
+    super.approve(to, tokenId);
   }
 
   function setApprovalForAll(address operator, bool approved) public override {

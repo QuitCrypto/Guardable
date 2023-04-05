@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.13;
 
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 interface IGuardable is IERC165 {
   // Interface ID 0x126f5523
